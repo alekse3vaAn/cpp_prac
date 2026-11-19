@@ -1,5 +1,6 @@
 #include "../include/DynamicArray.h"
 #include <iostream>
+#include <stdexcept>
 
 DynamicArray::DynamicArray(int n) {
     size = n > 0 ? n : 0;
@@ -27,28 +28,24 @@ void DynamicArray::print() const {
 
 void DynamicArray::set(int index, int value) {
     if (index < 0 || index >= size) {
-        std::cout << "Error: index out of range\n";
-        return;
+        throw std::out_of_range("Index out of range");
     }
     if (value < -100 || value > 100) {
-        std::cout << "Error: value must be between -100 and 100\n";
-        return;
+        throw std::invalid_argument("Value must be between -100 and 100");
     }
     data[index] = value;
 }
 
 int DynamicArray::get(int index) const {
     if (index < 0 || index >= size) {
-        std::cout << "Error: index out of range\n";
-        return 0;
+        throw std::out_of_range("Index out of range");
     }
     return data[index];
 }
 
 void DynamicArray::pushBack(int value) {
     if (value < -100 || value > 100) {
-        std::cout << "Error: value must be between -100 and 100\n";
-        return;
+        throw std::invalid_argument("Value must be between -100 and 100");
     }
 
     int* newData = new int[size + 1];
