@@ -1,6 +1,12 @@
 #include "../include/DynamicArray.h"
 #include <new>
 #include <string>
+#include <utility>
+
+void passByValue(DynamicArray<int> array, const char* label, const int* address) {
+    std::cout << label << ": " << array << '\n';
+    std::cout << "Same data pointer: " << (array.begin() == address) << '\n';
+}
 
 int main() {
     DynamicArray<int> a(3);
@@ -87,6 +93,42 @@ int main() {
     } catch (const std::bad_alloc& e) {
         std::cout << "Simulated bad_alloc: " << e.what() << '\n';
     }
+
+    DynamicArray<int> original(3);
+    original.set(0, 4);
+    original.set(1, 5);
+    original.set(2, 6);
+
+    DynamicArray<int> assigned(1);
+    assigned = original;
+    std::cout << "Copy assignment: " << assigned << '\n';
+    DynamicArray<int>& same = assigned;
+    assigned = same;
+    std::cout << "Self-assignment: " << assigned << '\n';
+
+    DynamicArray<int> first(1);
+    DynamicArray<int> second(1);
+    first = second = original;
+    std::cout << "Chain assignment: " << first << " / " << second << '\n';
+
+    DynamicArray<int> moved(std::move(original));
+    std::cout << "Move constructor: " << moved << '\n';
+    std::cout << "Original after move, size: " << original.getSize() << '\n';
+
+    DynamicArray<int> target(2);
+    target = std::move(moved);
+    std::cout << "Move assignment: " << target << '\n';
+    std::cout << "Moved-from object size: " << moved.getSize() << '\n';
+
+    DynamicArray<int> source(3);
+    source.set(0, 10);
+    source.set(1, 20);
+    source.set(2, 30);
+    const int* address = source.begin();
+    passByValue(source, "Passing by copy", address);
+    std::cout << "Source before move: " << source << '\n';
+    passByValue(std::move(source), "Passing by move", address);
+    std::cout << "Source after move, size: " << source.getSize() << '\n';
 
     return 0;
 }

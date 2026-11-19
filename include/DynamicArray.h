@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <type_traits>
 #include <typeinfo>
+#include <utility>
 
 template <typename T>
 class DynamicArray {
@@ -34,9 +35,38 @@ public:
         }
     }
 
+    DynamicArray& operator=(const DynamicArray& other) {
+        if (this == &other) {
+            return *this;
+        }
+        DynamicArray copy(other);
+        std::swap(data, copy.data);
+        std::swap(size, copy.size);
+        return *this;
+    }
+
+    DynamicArray(DynamicArray&& other) noexcept : size(other.size), data(other.data) {
+        other.size = 0;
+        other.data = nullptr;
+    }
+
+    DynamicArray& operator=(DynamicArray&& other) noexcept {
+        if (this == &other) {
+            return *this;
+        }
+        delete[] data;
+        size = other.size;
+        data = other.data;
+        other.size = 0;
+        other.data = nullptr;
+        return *this;
+    }
+
     ~DynamicArray() {
         delete[] data;
     }
+
+    int getSize() const { return size; }
 
     void print() const {
         std::cout << *this << '\n';
@@ -182,9 +212,9 @@ public:
     }
 
     T* begin() { return data; }
-    T* end() { return data + size; }
+    T* end() { return data ? data + size : nullptr; }
     const T* begin() const { return data; }
-    const T* end() const { return data + size; }
+    const T* end() const { return data ? data + size : nullptr; }
 
     double distance(const DynamicArray& other) const {
         if (size != other.size) {
