@@ -57,39 +57,134 @@ public:
         return data[index];
     }
 
+    class Reference {
+    private:
+        DynamicArray& array;
+        int index;
+
+    public:
+        Reference(DynamicArray& array, int index) : array(array), index(index) {}
+
+        Reference& operator=(const T& value) {
+            array.set(index, value);
+            return *this;
+        }
+
+        Reference& operator=(const Reference& other) {
+            return *this = static_cast<T>(other);
+        }
+
+        operator T() const {
+            return array.get(index);
+        }
+    };
+
+    Reference operator[](int index) {
+        if (index < 0 || index >= size) {
+            throw std::out_of_range("Index out of range");
+        }
+        return Reference(*this, index);
+    }
+
+    const T& operator[](int index) const {
+        if (index < 0 || index >= size) {
+            throw std::out_of_range("Index out of range");
+        }
+        return data[index];
+    }
+
     void pushBack(const T& value) {
         checkValue(value);
-
         T* newData = new T[size + 1];
         for (int i = 0; i < size; i++) {
             newData[i] = data[i];
         }
         newData[size] = value;
-
         delete[] data;
         data = newData;
         size++;
     }
 
-    void add(const DynamicArray& other) {
+    bool operator==(const DynamicArray& other) const {
+        if (size != other.size) {
+            return false;
+        }
+        for (int i = 0; i < size; i++) {
+            if (data[i] != other.data[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool operator!=(const DynamicArray& other) const {
+        return !(*this == other);
+    }
+
+    DynamicArray& operator+=(const DynamicArray& other) {
         if constexpr (std::is_arithmetic_v<T>) {
             for (int i = 0; i < size && i < other.size; i++) {
-                data[i] += other.data[i];
+                T value = data[i] + other.data[i];
+                checkValue(value);
+                data[i] = value;
             }
         } else {
             throw std::bad_typeid();
         }
+        return *this;
+    }
+
+    DynamicArray& operator-=(const DynamicArray& other) {
+        if constexpr (std::is_arithmetic_v<T>) {
+            for (int i = 0; i < size && i < other.size; i++) {
+                T value = data[i] - other.data[i];
+                checkValue(value);
+                data[i] = value;
+            }
+        } else {
+            throw std::bad_typeid();
+        }
+        return *this;
+    }
+
+    DynamicArray& operator+=(const T& value) {
+        if constexpr (std::is_arithmetic_v<T>) {
+            for (int i = 0; i < size; i++) {
+                T result = data[i] + value;
+                checkValue(result);
+                data[i] = result;
+            }
+        } else {
+            throw std::bad_typeid();
+        }
+        return *this;
+    }
+
+    DynamicArray& operator-=(const T& value) {
+        if constexpr (std::is_arithmetic_v<T>) {
+            for (int i = 0; i < size; i++) {
+                T result = data[i] - value;
+                checkValue(result);
+                data[i] = result;
+            }
+        } else {
+            throw std::bad_typeid();
+        }
+        return *this;
+    }
+
+    void add(const DynamicArray& other) {
+        *this += other;
     }
 
     void sub(const DynamicArray& other) {
-        if constexpr (std::is_arithmetic_v<T>) {
-            for (int i = 0; i < size && i < other.size; i++) {
-                data[i] -= other.data[i];
-            }
-        } else {
-            throw std::bad_typeid();
-        }
+        *this -= other;
     }
+
+    T* begin() { return data; }
+    T* end() { return data + size; }
+    const T* begin() const { return data; }
+    const T* end() const { return data + size; }
 
     double distance(const DynamicArray& other) const {
         if (size != other.size) {
